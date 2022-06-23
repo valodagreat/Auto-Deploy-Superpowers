@@ -2,7 +2,17 @@ version: 2.1
 
 orbs:
   slack: circleci/slack@4.1
-            
+
+commands:
+  destroy_environment:
+    steps:
+      - run:
+          name: destroy_environment
+          when: on_fail
+          command: |
+            aws cloudformation delete-stack --stack-name udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}
+            aws s3 rm "s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}" --recursive
+            aws cloudformation delete-stack --stack-name udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}
 jobs:
   build-frontend:
     docker:
@@ -118,6 +128,44 @@ jobs:
           event: fail
           template: basic_fail_1
 
+  deploy-infrastructure:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - yum install -y tar gzip
+      - run:
+          name: create backend infrastructure
+          command: |
+            aws cloudformation deploy
+              --template-file .circleci/files/backend.yml \
+              --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  \
+              --tags project=udapeople
+      - run:
+          name: create frontend infrastructure
+          command: |
+            aws cloudformation deploy
+              --template-file .circleci/files/frontend.yml \
+              --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  \
+              --tags project=udapeople
+      - run:
+          name: Add the EC2 instance IP to the Ansible inventory
+          command: |
+            echo $(aws ec2 describe-instances \
+              --query 'Reservations[*].Instances[*].PublicIpAddress' \
+              --filters "Name=tag:project,Values=udapeople" \
+              --output text) >> ~/project/.circleci/ansible/inventory.txt
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - project/.circleci/ansible/inventory.txt
+      - destroy_environment
+      - slack/notify:
+          event: fail
+          template: basic_fail_1
+
 workflows:
   default:
     jobs:
@@ -135,3 +183,8 @@ workflows:
       - scan-backend:
           requires:
             - build-frontend
+      - deploy-infrastructure:
+        requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+        filters:
+          branches:
+            only: [master]
