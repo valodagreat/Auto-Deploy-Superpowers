@@ -138,25 +138,25 @@ jobs:
           name: create backend infrastructure
           command: |
             aws cloudformation deploy
-              --template-file .circleci/files/backend.yml \
-              --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
-              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  \
-              --tags project=udapeople
+            --template-file .circleci/files/backend.yml \
+            --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+            --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  \
+            --tags project=udapeople
       - run:
           name: create frontend infrastructure
           command: |
             aws cloudformation deploy
-              --template-file .circleci/files/frontend.yml \
-              --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
-              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  \
-              --tags project=udapeople
+            --template-file .circleci/files/frontend.yml \
+            --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
+            --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  \
+            --tags project=udapeople
       - run:
           name: Add the EC2 instance IP to the Ansible inventory
           command: |
             echo $(aws ec2 describe-instances \
-              --query 'Reservations[*].Instances[*].PublicIpAddress' \
-              --filters "Name=tag:project,Values=udapeople" \
-              --output text) >> ~/project/.circleci/ansible/inventory.txt
+            --query 'Reservations[*].Instances[*].PublicIpAddress' \
+            --filters "Name=tag:project,Values=udapeople" \
+            --output text) >> ~/project/.circleci/ansible/inventory.txt
       - persist_to_workspace:
           root: ~/
           paths:
@@ -183,4 +183,10 @@ workflows:
       - scan-backend:
           requires:
             - build-backend
-      - deploy-infrastructure
+      - deploy-infrastructure:
+          requires:
+            - test-frontend
+            - test-backend
+            - scan-frontend
+            - scan-backend
+            
