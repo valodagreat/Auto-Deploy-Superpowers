@@ -166,8 +166,8 @@ jobs:
 
   configure-infrastructure:
     docker:
-      - image: python:3.7-alpine3.11
       - image: amazon/aws-cli
+      - image: python:3.7-alpine3.11
     steps:
       - checkout
       - add_ssh_keys:
@@ -189,8 +189,8 @@ jobs:
 
   run-migrations:
     docker:
-      - image: circleci/node:13.8.0
       - image: amazon/aws-cli
+      - image: circleci/node:13.8.0
     steps:
       - checkout
       - restore_cache:
@@ -213,9 +213,9 @@ jobs:
 
   deploy-frontend:
     docker:
-      - image: python:3.7-alpine3.11
       - image: amazon/aws-cli
       - image: circleci/node:13.8.0
+      - image: python:3.7-alpine3.11
     steps:
       - checkout
       - restore_cache:
@@ -249,11 +249,13 @@ jobs:
 
   deploy-backend:
     docker:
-      - image: python:3.7-alpine3.11
-      - image: circleci/node:13.8.0
       - image: amazon/aws-cli
+      - image: circleci/node:13.8.0
+      - image: python:3.7-alpine3.11
     steps:
       - checkout
+      - restore_cache:
+          keys: [backend-build]
       - add_ssh_keys:
           fingerprints: ["3f:4f:b0:b6:67:95:cb:48:4c:66:c3:a0:f3:bc:08:4c"]
       - attach_workspace:
