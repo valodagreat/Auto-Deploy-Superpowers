@@ -215,12 +215,7 @@ jobs:
             cd backend
             npm install
             npm run build
-            npm update mkdirp --depth 6
-            npm update path-parse --depth 3
-            npm update kind-of --depth 14
-            npm audit fix --audit-level=critical --force
-            npm run migrations > migrations_dump.txt
-            ls -al
+            npm run migrations >> migrations_dump.txt
             cat migrations_dump.txt
       - run:
           name: Send migration results to kvdb
