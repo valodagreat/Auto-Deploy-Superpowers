@@ -368,7 +368,7 @@ jobs:
             # --parameter-overrides WorkflowID=${CIRCLE_WORKFLOW_ID:0:7} \
             # --tags project=udapeople
       - persist_to_workspace:
-          root: ~
+          root: ~/
           paths:
             - OldWorkflowID.txt
       - destroy_environment
