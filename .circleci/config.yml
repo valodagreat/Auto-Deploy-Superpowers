@@ -307,13 +307,16 @@ jobs:
 
   smoke-test:
     docker:
-      - image: python:3.10-alpine3.16
+      - image: circleci/node:13.8.0
     steps:
       - checkout  
       - run:
           name: Install dependencies
           command: |
-            apk add --update --no-cache tar gzip nodejs npm
+            sudo apt-get install curl
+            sudo apt-get update -y && sudo apt-get install -y python3 \
+            python3-pip python3-setuptools groff less -y && sudo pip3 install --upgrade pip \
+            && sudo apt-get clean
       - run:
           name: Install awscli
           command: |
