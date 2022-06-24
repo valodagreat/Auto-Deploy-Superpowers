@@ -166,7 +166,6 @@ jobs:
 
   configure-infrastructure:
     docker:
-      - image: amazon/aws-cli
       - image: python:3.7-alpine3.11
     steps:
       - checkout
@@ -177,7 +176,7 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            apk add --update ansible
+            apk add --update --no-cache tar gzip ansible aws-cli
       - restore_cache:
           keys: [backend-build]
       - run:
@@ -189,12 +188,15 @@ jobs:
 
   run-migrations:
     docker:
-      - image: amazon/aws-cli
-      - image: circleci/node:13.8.0
+      - image: python:3.7-alpine3.11
     steps:
       - checkout
       - restore_cache:
           keys: [backend-build]
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --update --no-cache nodejs npm tar aws-cli curl gzip
       - run:
           name: Run migrations
           command: |
@@ -213,8 +215,6 @@ jobs:
 
   deploy-frontend:
     docker:
-      - image: amazon/aws-cli
-      - image: circleci/node:13.8.0
       - image: python:3.7-alpine3.11
     steps:
       - checkout
@@ -225,7 +225,7 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            apk add --update ansible tar gzip
+            apk add --update --no-cache nodejs npm tar aws-cli gzip
       - run:
           name: Get backend url
           command: |
@@ -249,8 +249,6 @@ jobs:
 
   deploy-backend:
     docker:
-      - image: amazon/aws-cli
-      - image: circleci/node:13.8.0
       - image: python:3.7-alpine3.11
     steps:
       - checkout
@@ -263,7 +261,7 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            apk add --update ansible tar gzip
+            apk add --update --no-cache nodejs npm tar aws-cli gzip ansible
       - run:
           name: Deploy backend
           command: |
