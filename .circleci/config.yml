@@ -374,6 +374,31 @@ jobs:
       - destroy_environment
       - revert-migrations
 
+  node_exporter:
+    docker:
+      - image: python:3.7-alpine3.11
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints: ["3f:4f:b0:b6:67:95:cb:48:4c:66:c3:a0:f3:bc:08:4c"]
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --update --no-cache nodejs npm tar gzip ansible
+      - run:
+          name: Install awscli
+          command: |
+            pip3 --no-cache-dir install --upgrade awscli
+      - run:
+          name: install and setup node exporter
+          command: |
+            cd .circleci/ansible
+            ansible-playbook -i inventory.txt nodeexporter.yml
+      - destroy_environment
+      - revert-migrations
+
   cleanup:
     docker:
       - image: python:3.7-alpine3.11
